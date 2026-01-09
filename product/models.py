@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Avg
-
+from users.models import CustomUser
+from common.models import BaseModel
 
 class Category(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
@@ -12,11 +13,12 @@ class Category(models.Model):
         return self.product_set.count()
 
 
-class Product(models.Model):
+class Product(BaseModel):
     title = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
     price = models.IntegerField(null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True)
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title

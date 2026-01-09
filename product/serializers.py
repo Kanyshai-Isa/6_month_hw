@@ -64,9 +64,9 @@ class ProductListSerializer(serializers.ModelSerializer):
 
         class Meta:
                 model = Product
-                fields = ['id', 'title', 'price', 'description', 'reviews', 'category_id']
+                # fields = ['id', 'title', 'price', 'description', 'reviews', 'category_id']
                 # fields = 'id title price description'.split
-                # fields = '__all__'
+                fields = '__all__'
                 # exclude = ['id', 'price']
                 # depth = 1
         

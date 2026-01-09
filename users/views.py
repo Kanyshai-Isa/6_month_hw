@@ -25,10 +25,10 @@ class AuthAPIView(CreateAPIView):
         serializer = UserAuthSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        username = serializer.validated_data['username']
+        email = serializer.validated_data['email']
         password = serializer.validated_data['password']
 
-        user = authenticate(username=username, password=password)   #user или None
+        user = authenticate(email=email, password=password)  
         if user is not None:
             token , created = Token.objects.get_or_create(user=user)
             return Response(data={'key': token.key})
@@ -44,7 +44,7 @@ class RegistartionAPIView(CreateAPIView):
         serializer = UserRegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        email = serializer.validated_data['username']
+        email = serializer.validated_data['email']
         password = serializer.validated_data['password']
 
 

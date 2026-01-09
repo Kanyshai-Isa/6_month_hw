@@ -13,7 +13,8 @@ from .serializers import (
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.viewsets import ModelViewSet
-
+from common.permissions import IsOwner, IsAnonymous, CanEditWithin15Minutes, IsModerator, IsCustomAuthenticated
+from rest_framework.permissions import SAFE_METHODS
 
 
 class CustomPagination(PageNumberPagination):
@@ -57,12 +58,26 @@ class ProductDetailAPIView(RetrieveUpdateDestroyAPIView):
     pagination_class = CustomPagination
     lookup_field = 'id'
 
+    def get_permissions(self):
+        if self.request.user.is_staff:
+            if self.request.method == 'POST':
+                return [IsCustomAuthenticated()]
+            return [IsModerator()]
+
+        if self.request.method in SAFE_METHODS:
+            return [IsAnonymous()]
+        if self.request.method in ['PUT', 'PATCH']:
+            return [IsOwner(), CanEditWithin15Minutes()]
+        if self.request.method == 'DELETE':
+            return [IsOwner()]
+        return [IsCustomAuthenticated()]
 
 
 class ProductCreateListAPIView(ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductListSerializer
     pagination_class = CustomPagination
+    permission_classes = [IsOwner | IsAnonymous]
 
 # @api_view(['GET'])
 # def product_review_api_view(request):

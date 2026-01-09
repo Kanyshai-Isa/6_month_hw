@@ -8,6 +8,6 @@ class CustomUserAdmin(admin.ModelAdmin):
     list_display = ('id', 'email', 'is_active')
     ordering = ('email',)
     fieldsets = (
-        (None, {'fields': ('email', 'password', 'is_active')}),
+        (None, {'fields': ('email', 'password', 'is_active', 'phone_number', 'is_staff')}),
         ('Important dates', {'fields': ('last_login',)}),
     )
