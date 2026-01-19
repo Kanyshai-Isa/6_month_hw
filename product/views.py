@@ -1,7 +1,7 @@
 from django.shortcuts import render
 # from rest_framework.decorators import api_view
 from rest_framework.response import Response
-# from rest_framework import status
+from rest_framework import status
 from .models import Product, Category, Review
 from .serializers import (
     ProductListSerializer, ProductDetailSerializer,
@@ -78,6 +78,27 @@ class ProductCreateListAPIView(ListCreateAPIView):
     serializer_class = ProductListSerializer
     pagination_class = CustomPagination
     permission_classes = [IsOwner | IsAnonymous]
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return ProductValidateSerializer
+        return ProductListSerializer
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        product = Product.objects.create(
+            title=serializer.validated_data['title'],
+            description=serializer.validated_data['description'],
+            price=serializer.validated_data['price'],
+            category_id=serializer.validated_data['category_id'],
+            owner = request.user
+        )
+        return Response(
+            data=ProductDetailSerializer(product).data,
+            status=status.HTTP_201_CREATED
+        )
 
 # @api_view(['GET'])
 # def product_review_api_view(request):

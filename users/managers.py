@@ -13,7 +13,7 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
-        
+
         if not extra_fields.get('phone_number'):
             raise ValueError('Superuser must have a phone_number')
         if extra_fields.get('is_staff') is not True:

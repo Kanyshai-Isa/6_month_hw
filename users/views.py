@@ -2,13 +2,24 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserRegisterSerializer, UserAuthSerializer, ConfirmCodeSerializer, UserSerializer
+from .serializers import (
+    UserRegisterSerializer, UserAuthSerializer,
+    ConfirmCodeSerializer, UserSerializer,
+    CustomTokenObtainPairSerializer
+)
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from .models import ConfirmCode
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, CreateAPIView
 from users.models import CustomUser
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
 
 
 
@@ -46,11 +57,13 @@ class RegistartionAPIView(CreateAPIView):
 
         email = serializer.validated_data['email']
         password = serializer.validated_data['password']
+        birthdate = serializer.validated_data['birthdate']
 
 
         user = CustomUser.objects.create_user(   #не просто create!
             email=email,
             password=password,
+            birthdate=birthdate,
             is_active=False, #сначала фолс, содать код и привязываете к пользователю
         )
 

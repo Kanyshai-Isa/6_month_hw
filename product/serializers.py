@@ -1,10 +1,11 @@
 from rest_framework import serializers
 from .models import Product, Category, Review
 from rest_framework.exceptions import ValidationError
+from common.validators import validate_age
 
 
 class ProductReviewSerializer(serializers.ModelSerializer):
-        rating = serializers.SerializerMethodField()  #для средней оценки
+        rating = serializers.SerializerMethodField()
 
         class Meta:
                 model = Product
@@ -86,6 +87,11 @@ class ProductValidateSerializer(serializers.Serializer):
                 except Category.DoesNotExist:
                         raise ValidationError('category does not exist')
                 return category_id
+        
+        def validate(self, attrs):
+                request = self.context.get('request')
+                validate_age(request)
+                return attrs
         
 class CategoryValidateSerializer(serializers.Serializer):
         name = serializers.CharField(min_length=1, max_length=40)
