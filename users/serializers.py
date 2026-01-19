@@ -4,6 +4,12 @@ from rest_framework.exceptions import ValidationError
 from .models import ConfirmCode
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+
+class OauthCodeSerializer(serializers.Serializer):
+    code = serializers.CharField()
+    
+
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
