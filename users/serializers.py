@@ -1,13 +1,13 @@
 from rest_framework import serializers
 from users.models import CustomUser
 from rest_framework.exceptions import ValidationError
-from .models import ConfirmCode
+# from .models import ConfirmCode
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class OauthCodeSerializer(serializers.Serializer):
     code = serializers.CharField()
-    
+
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -56,12 +56,5 @@ class UserRegisterSerializer(serializers.Serializer):
     
 
 class ConfirmCodeSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
     confirm_code = serializers.CharField(max_length=6)
-
-    def validate_code(self,confirm_code):
-        try:
-              ConfirmCode.objects.get(confirm_code=confirm_code)
-              return confirm_code
-        except ConfirmCode.DoesNotExist:
-            raise ValidationError('This code does not exist')
-

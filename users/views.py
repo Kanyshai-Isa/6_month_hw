@@ -9,11 +9,16 @@ from .serializers import (
 )
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
-from .models import ConfirmCode
+# from .models import ConfirmCode
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, CreateAPIView
 from users.models import CustomUser
 from rest_framework_simplejwt.views import TokenObtainPairView
+from django.core.cache import cache
+import random
+
+
+
 
 
 
@@ -64,12 +69,18 @@ class RegistartionAPIView(CreateAPIView):
             email=email,
             password=password,
             birthdate=birthdate,
-            is_active=False, #сначала фолс, содать код и привязываете к пользователю
+            is_active=False, 
         )
+        confirm_code = str(random.randint(100000, 999999))
 
-        confirm = ConfirmCode.objects.create(user=user)
-        return Response(data={'user_id':user.id, 'confirm_code': confirm.confirm_code}, status=status.HTTP_201_CREATED)
-    
+        cache.set(f"confirm_code:{user.id}", confirm_code, timeout=300)
+
+        print(f"Saved confirm code {confirm_code} for user {user.id}")
+        return Response(
+            {"user_id": user.id, "confirm_code": confirm_code},
+            status=status.HTTP_201_CREATED
+            
+        )
 
 
 class ConfirmAPIView(CreateAPIView):
@@ -79,19 +90,21 @@ class ConfirmAPIView(CreateAPIView):
         serializer = ConfirmCodeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        user_id = serializer.validated_data['user_id']
         confirm_code = serializer.validated_data['confirm_code']
 
-        try:
-            code_obj = ConfirmCode.objects.get(confirm_code=confirm_code)
-        except ConfirmCode.DoesNotExist:
-            return Response ({'error': 'Invalid code'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        user = code_obj.user
+        stored_code = cache.get(f"confirm_code:{user_id}")
+        if stored_code != confirm_code:
+            return Response({"error": "Invalid or expired code"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = CustomUser.objects.get(id=user_id)
         user.is_active = True
         user.save()
 
+        cache.delete(f"confirm_code:{user_id}")
 
-        return Response(data={'user_id':user.id}, status=status.HTTP_200_OK)
+        return Response({"user_id": user.id}, status=status.HTTP_200_OK)
+
 
 
 

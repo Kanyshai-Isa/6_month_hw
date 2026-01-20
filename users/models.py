@@ -21,17 +21,3 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self) -> str:
         return self.email or ''
-
-
-
-class ConfirmCode(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    confirm_code = models.CharField(max_length=6, blank=True, null=True)
-
-    def save(self, *args, **kwargs):
-        if not self.confirm_code:
-            self.confirm_code = f"{secrets.randbelow(900000) + 100000}"
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.confirm_code
