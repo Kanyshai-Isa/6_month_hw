@@ -16,6 +16,7 @@ from users.models import CustomUser
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.core.cache import cache
 import random
+from users.tasks import add, send_otp_mail
 
 
 
@@ -38,6 +39,9 @@ class AuthAPIView(CreateAPIView):
     serializer_class = UserAuthSerializer
 
     def post(self, request):
+        from time import sleep
+        # sleep(5)
+        add.delay(2,2)
         serializer = UserAuthSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -76,11 +80,11 @@ class RegistartionAPIView(CreateAPIView):
         cache.set(f"confirm_code:{user.id}", confirm_code, timeout=300)
 
         print(f"Saved confirm code {confirm_code} for user {user.id}")
-        return Response(
-            {"user_id": user.id, "confirm_code": confirm_code},
-            status=status.HTTP_201_CREATED
-            
-        )
+        
+        send_otp_mail.delay(email, confirm_code)
+
+        return Response({"user_id": user.id, "confirm_code": confirm_code}, status=status.HTTP_201_CREATED)
+    
 
 
 class ConfirmAPIView(CreateAPIView):
